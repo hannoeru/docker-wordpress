@@ -1,8 +1,8 @@
 # Wordpress & Docker
 
-This file will setup Wordpress, MySQL & PHPMyAdmin with a single command. Add the code below to a file called "docker-compose.yaml" and run the command.
+This file will setup Wordpress, MySQL & PHPMyAdmin with a single command.
 
-Please change template.env to .env and set your own user & password etc...
+Please change `template.env` to `.env` and set your own user & password etc...
 
 ```
 $ docker-compose up -d
