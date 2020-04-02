@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  # Database
+  db:
+    image: mariadb
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    command: '--default-authentication-plugin=mysql_native_password'
+    networks:
+      - wpsite
+  # phpmyadmin
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
+    restart: unless-stopped
+    ports:
+      - '8080:80'
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - wpsite
+
+  # Wordpress
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:php7.4-fpm-alpine
+    restart: unless-stopped
+    volumes:
+      - './wp_data:/var/www/html'
+      - './config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${DB_NAME}
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - wpsite
+  # Nginx Web Server
+  webserver:
+    depends_on:
+      - wordpress
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    volumes:
+      - ./wp_data:/var/www/html
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - wpsite
+networks:
+  wpsite:
+    driver: bridge
+volumes:
+  db_data:
